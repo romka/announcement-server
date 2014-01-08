@@ -32,10 +32,11 @@ class Db:
         result = {}
 
         for item in data:
-            result[item['game']] = {
-                'result': '1',
-                'links': item['links'],
-                'announces': item['announces'],
-            }
+            if item.has_key('links') and item.has_key('announces'):
+                result[item['game']] = {
+                    'result': '1',
+                    'links': item['links'],
+                    'announces': item['announces'],
+                }
 
         return result

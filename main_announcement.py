@@ -35,7 +35,7 @@ log.msg('after init AnnouncementServerFactory')
 tcp_service = internet.TCPServer(port, factory, interface=host)
 tcp_service.setServiceParent(top_service)
 
-application = service.Application("main")
+application = service.Application("main_announcement")
 
 # this hooks the collection we made to the application
 top_service.setServiceParent(application)

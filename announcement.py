@@ -31,7 +31,8 @@ class Announcement:
         protocol.transport.loseConnection()
 
         # refresh announces
-        if int(time.time()) - self.announces_time > 60:
+        if int(time.time()) - self.announces_time > 15:
             self.announces = self.db.load_announces()
+            log.msg('Announces updated')
             self.announces_time = int(time.time())
 
