@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="metanav">
+    <form method="post" action="{{ url_for('login') }}">
+        {{ form.csrf_token }}
+        {{ render_field(form.login, class='login') }}
+        {{ render_field(form.password) }}
+        <p><input type="submit" value="Log in" class="small button right">
+    </form>
+</div>
+{% endblock %}

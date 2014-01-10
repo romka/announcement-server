@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <blockquote>
+        Welcome on board, {{ session.username }}! We have {{ counter }} entries in our DB.
+    </blockquote>
+        {% for form in edit_forms %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-{{ form.name.data }}">
+                            Announce for game {{ form.name.data }}
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapse-{{ form.name.data }}" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <form method="post" action="{{ url_for('index') }}">
+                            {{ form.csrf_token }}
+                            {{ render_field(form.name) }}
+                            {{ render_field(form.ios) }}
+                            {{ render_field(form.android) }}
+                            {{ render_field(form.texts, style="height: 100px; width: 100%") }}
+                            <input type="submit" value='Edit "{{ form.name.data }}"' class="small button right">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+
+{% endblock %}
