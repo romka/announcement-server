@@ -4,6 +4,7 @@ import txmongo
 from pymongo import MongoClient
 from twisted.internet import defer
 from twisted.python import log
+import base64
 
 class Db:
     """
@@ -33,6 +34,17 @@ class Db:
 
         for item in data:
             if item.has_key('links') and item.has_key('announces'):
+                a = item['announces']
+                for k in a:
+                    announce = item['announces'][k]
+                    announce = announce.encode('utf-8-sig')
+                    announce = base64.b64encode(announce)
+                    announce = announce.replace('77u/', '')
+
+                    item['announces'][k] = announce
+                    log.msg('')
+                    log.msg('ENC ANNOUNSE:' + announce)
+
                 result[item['game']] = {
                     'result': '1',
                     'links': item['links'],

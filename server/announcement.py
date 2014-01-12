@@ -16,6 +16,7 @@ class Announcement:
         self.announces = self.db.load_announces()
         self.announces_time = int(time.time())
 
+        log.msg('Announcement __init__')
         log.msg(self.announces)
 
         self.crypt = Crypt(self.sequence)

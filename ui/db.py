@@ -7,15 +7,32 @@ class Db:
     """
         Database communication class.
     """
-    def __init__(self, db_name, db_host, db_port):
+    def __init__(self):
         """
             Initialize variables.
         """
-        self.db_status = 'not ready'
+        from flask import current_app
 
-        self.db_name = db_name
-        self.db_host = db_host
-        self.db_port = db_port
+        self.db_name = current_app.config['MONGODB_DATABASE']
+        self.db_host = current_app.config['MONGODB_HOST']
+        self.db_port = current_app.config['MONGODB_PORT']
+
+    def delete_announce(self, game):
+        sync_mongo = MongoClient(self.db_host, self.db_port)
+
+        sync_db = sync_mongo[self.db_name]
+        sync_records = sync_db.announces
+
+        return sync_records.remove({"game":game})
+
+    def update_announce(self, data):
+        sync_mongo = MongoClient(self.db_host, self.db_port)
+
+        sync_db = sync_mongo[self.db_name]
+        sync_records = sync_db.announces
+
+        return sync_records.update({"game": data['game']}, {"game": data['game'], "announces": data['announces'], "links": data['links']}, True)
+
 
     def load_announces(self):
         # Sync mongo connection

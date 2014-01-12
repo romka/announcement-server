@@ -16,7 +16,7 @@ class LoginForm(IPSecureForm):
         validators.Required(),
         ])
 
-    password = PasswordField('New Password', [
+    password = PasswordField('Password', [
         validators.Required(message='Password field is required'),
         validate_login_password
     ])

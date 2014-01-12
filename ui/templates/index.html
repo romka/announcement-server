@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <blockquote>
-        Welcome on board, {{ session.username }}! We have {{ counter }} entries in our DB.
-    </blockquote>
+    <div class="jumbotron">
+        <p>Welcome on board, {{ session.username }}! We have {{ counter }} entries in our DB.</p>
+    </div>
         {% for form in edit_forms %}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -15,18 +15,17 @@
                 </div>
                 <div id="collapse-{{ form.name.data }}" class="panel-collapse collapse in">
                     <div class="panel-body">
-                        <form method="post" action="{{ url_for('index') }}">
+                        <form method="post" action="{{ url_for('save') }}">
                             {{ form.csrf_token }}
                             {{ render_field(form.name) }}
                             {{ render_field(form.ios) }}
                             {{ render_field(form.android) }}
                             {{ render_field(form.texts, style="height: 100px; width: 100%") }}
+                            {{ render_field(form.delete) }}
                             <input type="submit" value='Edit "{{ form.name.data }}"' class="small button right">
                         </form>
                     </div>
                 </div>
             </div>
         {% endfor %}
-
-
 {% endblock %}

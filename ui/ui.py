@@ -12,50 +12,105 @@ app = Flask(__name__)
 
 app.config.from_object('config')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
     if not 'username' in session:
         flash('Please log in')
         return redirect(url_for('login'))
 
-    if request.method == 'POST':
-        import pprint
-        return pprint.pformat(request.form)
-    else:
+    from db import Db
+    from forms.edit import EditForm
+
+    db = Db()
+    announces = db.load_announces()
+    a = {}
+
+    counter = 0
+    edit_forms = []
+
+    for key in announces:
+        item = announces[key]
+        if 'links' in item and 'announces' in item:
+            links = item['links']
+            if 'ios' in links and 'android' in links:
+                a[key] = item
+
+                form = EditForm(request.form, csrf_context=request.remote_addr)
+                form.name.data = key
+                form.android.data = links['android']
+                form.ios.data = links['ios']
+
+                texts = ''
+                for key in item['announces']:
+                    texts = texts + key + "|" +  item['announces'][key] + "\n"
+
+                form.texts.data = texts
+
+                edit_forms.append(form)
+
+                counter = counter + 1
+
+    return render_template('index.html', announces=a, counter=counter, edit_forms=edit_forms)
+
+@app.route('/add/', methods=['GET'])
+def add():
+    if not 'username' in session:
+        flash('Please log in')
+        return redirect(url_for('login'))
+
+    from forms.edit import EditForm
+    form = EditForm(request.form, csrf_context=request.remote_addr)
+    return render_template('add.html', form=form)
+
+@app.route('/save/', methods=['POST'])
+def save():
+    if not 'username' in session:
+        flash('Please log in')
+        return redirect(url_for('login'))
+
+    from forms.edit import EditForm
+    form = EditForm(request.form, csrf_context=request.remote_addr)
+
+    if form.validate():
         from db import Db
-        from flask import current_app
-        from forms.edit import EditForm
+        db = Db()
 
-        db = Db(current_app.config['MONGODB_DATABASE'], current_app.config['MONGODB_HOST'], current_app.config['MONGODB_PORT'])
-        announces = db.load_announces()
-        a = {}
+        if 'delete' in request.form and request.form['delete'] == 'y':
+            db.delete_announce(request.form['name'])
+            flash('Item succesfully deleted')
+        else:
+            raw_announces = request.form['texts'].strip()
+            announces = {}
+            lines = raw_announces.split("\n")
 
-        counter = 0
-        edit_forms = []
+            for line in lines:
+                items = line.split("|")
+                if len(items) > 1:
+                    announces[items[0]] = items[1]
 
-        for key in announces:
-            item = announces[key]
-            if 'links' in item and 'announces' in item:
-                links = item['links']
-                if 'ios' in links and 'android' in links:
-                    a[key] = item
+            links = {}
+            links['android'] = request.form['android']
+            links['ios'] = request.form['ios']
 
-                    form = EditForm(request.form, csrf_context=request.remote_addr)
-                    form.name.data = key
-                    form.android.data = links['android']
-                    form.ios.data = links['ios']
 
-                    texts = ''
-                    for key in item['announces']:
-                        texts = texts + key + "|" +  item['announces'][key] + "\n"
+            data = {}
+            data['game'] = request.form['name']
+            data['announces'] = announces
+            data['links'] = links
 
-                    form.texts.data = texts
+            if db.update_announce(data) == None:
+                flash("Data update error")
+            else:
+                flash("Data succesfully saved")
 
-                    edit_forms.append(form)
+        return redirect(url_for('index'))
 
-                    counter = counter + 1
+        #import pprint
+        #return pprint.pformat(request.form)
+    else:
+        flash('Form error! Data wasn\'t saved!')
+        return redirect(url_for('index'))
 
-        return render_template('index.html', announces=a, counter=counter, edit_forms=edit_forms)
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -64,7 +119,6 @@ def login():
         return redirect(url_for('index'))
 
     from forms.user.login import LoginForm
-
     form = LoginForm(request.form, csrf_context=request.remote_addr)
 
     if request.method == 'POST':
